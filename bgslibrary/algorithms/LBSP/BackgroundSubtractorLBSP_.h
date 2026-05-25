@@ -32,6 +32,12 @@ namespace bgslibrary
         virtual void initialize(const cv::Mat& oInitImg, const cv::Mat& oROI) = 0;
         //! primary model update function; the learning param is used to override the internal learning speed (ignored when <= 0)
         virtual void apply(cv::InputArray image, cv::OutputArray fgmask, double learningRate = 0) = 0;
+        //! OpenCV >= 4.13 adds this as a pure virtual; we forward to the 3-arg apply.
+        //! knownForegroundMask is intentionally ignored (masking unused in BGSLibrary).
+        virtual void apply(cv::InputArray image, cv::InputArray knownForegroundMask, cv::OutputArray fgmask, double learningRate = 0)
+        {
+          apply(image, fgmask, learningRate);
+        }
         //! unused, always returns nullptr
         //virtual cv::AlgorithmInfo* info() const;
         //! returns a copy of the ROI used for descriptor extraction
