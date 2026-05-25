@@ -93,71 +93,33 @@ curl -fsSL https://pixi.sh/install.sh | sh
 
 Restart your terminal after installation.
 
-##### 1. Create a Pixi workspace
+##### 1. Dependencies and build tasks are preconfigured
 
-Inside the bgslibrary repository:
+The repository already ships a `pixi.toml` that declares all build
+dependencies — OpenCV, CMake, Ninja, compilers and pkg-config, plus
+Python and NumPy for the Python wrapper — and all the build tasks used
+below. Just clone the repository; there is no need to run `pixi init` or
+add anything by hand.
+
+List the available tasks at any time with:
 
 ```bash
-pixi init .
+pixi task list
 ```
 
-Add required dependencies:
-
-```bash
-pixi add opencv cmake ninja compilers pkg-config
-```
-
-Pixi will generate a `pixi.toml` with:
-
-- OpenCV (C++ + Python bindings)
-- C/C++ compilers
-- CMake + Ninja
-- pkg-config
-
-##### 2. Add Pixi build tasks
-
-Append this block to your `pixi.toml`:
-
-```toml
-[tasks]
-# Core build tasks
-configure = "cmake -S . -B build -G Ninja"
-build = "cmake --build build"
-clean = "rm -rf build"
-
-# Examples tasks
-configure_examples = "cmake -S examples -B examples/build"
-build_examples = { cmd = "cmake --build examples/build", depends-on = ["configure_examples"] }
-clean_examples = "rm -rf examples/build"
-
-# Combined tasks
-rebuild = { cmd = "echo 'Rebuild complete'", depends-on = ["clean", "configure", "build"] }
-rebuild_all = { cmd = "echo 'Full rebuild complete'", depends-on = ["clean", "clean_examples", "rebuild", "build_examples"] }
-
-# Run tasks
-run = "./build/bgslibrary --use_cam --camera=0"
-run_bgs_demo = "./examples/build/bgs_demo"
-run_bgs_demo2 = "./examples/build/bgs_demo2"
-
-# Development helpers
-install = { cmd = "cmake --install build --prefix .pixi/envs/default", depends-on = ["build"] }
-```
-
-This configuration provides granular control over the build process with separate tasks for cleaning, configuring, and building.
-
-##### 3. Activate the Pixi environment
+##### 2. Activate the Pixi environment
 
 ```bash
 pixi shell
 ```
 
-##### 4. Configure the build
+##### 3. Configure the build
 
 ```bash
 pixi run configure
 ```
 
-##### 5. Build bgslibrary
+##### 4. Build bgslibrary
 
 ```bash
 pixi run build
@@ -166,6 +128,19 @@ pixi run build
 This generates:
 - `build/bgslibrary`
 - `build/libbgslibrary_core.*`
+
+##### 5. Build the Python wrapper (pybgs)
+
+To build and use the Python bindings (`import pybgs`):
+
+```bash
+pixi run build_python     # configure + build pybgs (BGS_PYTHON_SUPPORT=ON, into build_py/)
+pixi run install_python   # install pybgs into the Pixi environment's site-packages
+python -c "import pybgs"  # verify the import works
+```
+
+`pybgs` is compiled against the OpenCV, Python and NumPy provided by the
+Pixi environment, so no system Python or OpenCV installation is required.
 
 ##### 6. Build C++ examples (optional)
 
