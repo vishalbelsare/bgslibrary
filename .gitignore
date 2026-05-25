@@ -36,7 +36,6 @@ bgslibrary_test_env
 .pixi/*
 !.pixi/config.toml
 pixi.lock
-pixi.toml
 CLAUDE.md
 AGENTS.md
 resume_*

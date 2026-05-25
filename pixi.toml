@@ -1,0 +1,45 @@
+[workspace]
+authors = ["Andrews Cordolino Sobral <andrewssobral@gmail.com>"]
+channels = ["conda-forge"]
+name = "bgslibrary-master-test"
+platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64"]
+version = "0.1.0"
+
+[tasks]
+# Core build tasks
+configure = "cmake -S . -B build -G Ninja"
+build = "cmake --build build"
+clean = "rm -rf build"
+
+# Examples tasks
+configure_examples = "cmake -S examples -B examples/build"
+build_examples = { cmd = "cmake --build examples/build", depends-on = ["configure_examples"] }
+clean_examples = "rm -rf examples/build"
+
+# Combined tasks
+rebuild = { cmd = "echo 'Rebuild complete'", depends-on = ["clean", "configure", "build"] }
+rebuild_all = { cmd = "echo 'Full rebuild complete'", depends-on = ["clean", "clean_examples", "rebuild", "build_examples"] }
+
+# Run tasks
+run = "./build/bgslibrary --use_cam --camera=0"
+run_bgs_demo = "./examples/build/bgs_demo"
+run_bgs_demo2 = "./examples/build/bgs_demo2"
+
+# Development helpers
+install = { cmd = "cmake --install build --prefix .pixi/envs/default", depends-on = ["build"] }
+
+# Python wrapper (pybgs) tasks
+configure_python = "cmake -S . -B build_py -G Ninja -DBGS_PYTHON_SUPPORT=ON"
+build_python = { cmd = "cmake --build build_py", depends-on = ["configure_python"] }
+install_python = { cmd = "cmake --install build_py --prefix .pixi/envs/default", depends-on = ["build_python"] }
+clean_python = "rm -rf build_py"
+
+[dependencies]
+opencv = ">=4.13.0,<5"
+cmake = ">=4.3.3,<5"
+ninja = ">=1.13.2,<2"
+compilers = ">=1.11.0,<2"
+pkg-config = ">=0.29.2,<0.30"
+# Python wrapper (pybgs) dependencies
+python = ">=3.9"
+numpy = ">=1.21"
