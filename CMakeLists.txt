@@ -281,8 +281,8 @@ endif()
 if(UNIX AND BGS_PYTHON_SUPPORT)
   execute_process(
     COMMAND "${PYTHON_EXECUTABLE}" -c "if True:
-      from distutils import sysconfig as sc
-      print(sc.get_python_lib(prefix='', plat_specific=True))"
+      import sysconfig, os
+      print(sysconfig.get_path('platlib', vars={'base': '', 'platbase': ''}).lstrip(os.sep))"
     OUTPUT_VARIABLE PYTHON_SITE
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
