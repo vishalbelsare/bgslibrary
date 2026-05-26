@@ -25,9 +25,21 @@ from distutils.command.install_data import install_data
 
 PACKAGE_NAME = "pybgs"
 
-# PyPI distribution name. Defaults to "pybgs"; set PYBGS_DIST_NAME=bgslibrary to build the
-# identically-built "bgslibrary" distribution (same compiled module, different PyPI name).
-DIST_NAME = os.environ.get("PYBGS_DIST_NAME", "pybgs")
+# PyPI distribution name, resolved in order: the PYBGS_DIST_NAME env var; a top-level DIST_NAME
+# marker file (shipped inside the sdist via MANIFEST.in, so the chosen name survives into the
+# source distribution and pip rebuilds it consistently at install time); else "pybgs". Build the
+# twin "bgslibrary" distribution by writing "bgslibrary" into a DIST_NAME file before building.
+def _dist_name():
+    n = os.environ.get("PYBGS_DIST_NAME")
+    if n:
+        return n.strip()
+    marker = os.path.join(os.path.dirname(os.path.abspath(__file__)), "DIST_NAME")
+    if os.path.exists(marker):
+        with open(marker) as fh:
+            return fh.read().strip() or "pybgs"
+    return "pybgs"
+
+DIST_NAME = _dist_name()
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
