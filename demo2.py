@@ -12,22 +12,6 @@ import glob
 
 print("OpenCV Version: {}".format(cv2.__version__))
 
-def is_cv2():
-  return check_opencv_version("2.")
-
-def is_cv3():
-  return check_opencv_version("3.")
-
-def is_lower_or_equals_cv347():
-  [major, minor, revision] = str(cv2.__version__).split('.')
-  return int(major) == 3 and int(minor) <= 4 and int(revision) <= 7
-
-def is_cv4():
-  return check_opencv_version("4.")
-
-def check_opencv_version(major):
-  return cv2.__version__.startswith(major)
-
 ## bgslibrary algorithms
 algorithms=[]
 algorithms.append(bgs.FrameDifference())
@@ -56,31 +40,22 @@ algorithms.append(bgs.VuMeter())
 algorithms.append(bgs.KDE())
 algorithms.append(bgs.IndependentMultimodal())
 
-if is_cv2():
-  algorithms.append(bgs.MixtureOfGaussianV1()) # if opencv 2.x
-  algorithms.append(bgs.GMG()) # if opencv 2.x
-
-if not is_cv2():
-  algorithms.append(bgs.KNN()) # if opencv > 2
-
-if is_cv2() or is_cv3():
-  algorithms.append(bgs.DPAdaptiveMedian())
-  algorithms.append(bgs.DPGrimsonGMM())
-  algorithms.append(bgs.DPZivkovicAGMM())
-  algorithms.append(bgs.DPMean())
-  algorithms.append(bgs.DPWrenGA())
-  algorithms.append(bgs.DPPratiMediod())
-  algorithms.append(bgs.DPEigenbackground())
-  algorithms.append(bgs.DPTexture())
-  algorithms.append(bgs.T2FGMM_UM())
-  algorithms.append(bgs.T2FGMM_UV())
-  algorithms.append(bgs.T2FMRF_UM())
-  algorithms.append(bgs.T2FMRF_UV())
-  algorithms.append(bgs.MultiCue())
-
-if is_cv2() or is_lower_or_equals_cv347():
-  algorithms.append(bgs.LBP_MRF())
-  algorithms.append(bgs.MultiLayer())
+# The algorithms below are compiled into pybgs only for certain OpenCV versions.
+# Which ones are available depends on the OpenCV that pybgs was COMPILED against
+# (not on cv2.__version__, the opencv-python build). Add each one only if this
+# pybgs build actually exposes it, so the demo never raises AttributeError.
+for name in [
+    "MixtureOfGaussianV1", "GMG",          # OpenCV 2.x only
+    "KNN",                                  # OpenCV > 2
+    "DPAdaptiveMedian", "DPGrimsonGMM", "DPZivkovicAGMM", "DPMean", "DPWrenGA",
+    "DPPratiMediod", "DPEigenbackground", "DPTexture",
+    "T2FGMM_UM", "T2FGMM_UV", "T2FMRF_UM", "T2FMRF_UV", "MultiCue",  # OpenCV 2.x/3.x only
+    "LBP_MRF", "MultiLayer",               # OpenCV 2.x / <= 3.4.7 only
+  ]:
+  if hasattr(bgs, name):
+    algorithms.append(getattr(bgs, name)())
+  else:
+    print("skipping (not available in this pybgs build):", name)
 
 
 # check if we want to use the images
