@@ -25,6 +25,10 @@ from distutils.command.install_data import install_data
 
 PACKAGE_NAME = "pybgs"
 
+# PyPI distribution name. Defaults to "pybgs"; set PYBGS_DIST_NAME=bgslibrary to build the
+# identically-built "bgslibrary" distribution (same compiled module, different PyPI name).
+DIST_NAME = os.environ.get("PYBGS_DIST_NAME", "pybgs")
+
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
         Extension.__init__(self, name, sources=[])
@@ -201,8 +205,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name='pybgs',
-    version='3.3.0.post2',
+    name=DIST_NAME,
+    version='3.3.1',
     author='Andrews Sobral',
     author_email='andrewssobral@gmail.com',
     url='https://github.com/andrewssobral/bgslibrary',
