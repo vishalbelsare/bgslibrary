@@ -53,3 +53,4 @@ pkg-config = ">=0.29.2,<0.30"
 # C++/OpenCV core), so this is safe for the committed baselines.
 python = ">=3.10,<3.13"
 numpy = ">=1.21"
+pip = ">=26.1.1,<27"
