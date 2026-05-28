@@ -241,7 +241,12 @@ if(BGS_PYTHON_SUPPORT)
   #pybind11_add_module(bgs_python ${bgs_src} ${tools_src})
   pybind11_add_module(bgs_python ${bgs_python_src} ${bgs_python_inc})
 
-  target_link_libraries(bgs_python PRIVATE bgslibrary_core ${OpenCV_LIBS} ${PYTHON_LIBRARY} pybind11::module)
+  # Do NOT link ${PYTHON_LIBRARY} here: pybind11_add_module already links the Python
+  # extension correctly (on macOS via `-undefined dynamic_lookup`, WITHOUT libpython).
+  # Explicitly linking libpython gives the module its own Python runtime under macOS's
+  # two-level namespace -> PyGILState_Ensure/take_gil deref a null GIL -> segfault on
+  # `import pybgs` (Apple Silicon). Linux's flat namespace masked it.
+  target_link_libraries(bgs_python PRIVATE bgslibrary_core ${OpenCV_LIBS} pybind11::module)
   #target_link_libraries(bgs_python ${OpenCV_LIBS} ${Boost_LIBRARIES} ${PYTHON_LIBRARY})
   #target_link_libraries(bgs_python ${OpenCV_LIBS} ${PYTHON_LIBRARY} pybind11::module)
   #target_link_libraries(bgs_python PRIVATE ${OpenCV_LIBS} ${PYTHON_LIBRARY} pybind11::embed)
@@ -278,7 +283,7 @@ if(NOT BGS_PYTHON_ONLY)
   # set_target_properties(bgslibrary PROPERTIES OUTPUT_NAME bgs)
 endif()
 
-if(UNIX AND BGS_PYTHON_SUPPORT)
+if(BGS_PYTHON_SUPPORT)
   execute_process(
     COMMAND "${PYTHON_EXECUTABLE}" -c "if True:
       import sysconfig, os
