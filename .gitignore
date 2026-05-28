@@ -1,6 +1,7 @@
 etc/
 tmp/
 bkp/
+logs/
 build*/
 wiki/
 dist/
